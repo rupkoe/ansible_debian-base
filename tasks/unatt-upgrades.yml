@@ -1,0 +1,19 @@
+---
+###
+# unattended-upgrades (automatic linux updates)
+###
+
+- name: install unattended-upgrades
+  apt: name=unattended-upgrades state=present
+
+- name: copy unattended-upgrades config
+  template: src={{ item.src }} dest={{ item.dest }} backup=yes
+  with_items:
+    - { src: "unattended-upgrades.j2", dest: "/etc/apt/apt.conf.d/50unattended-upgrades" }
+    - { src: "auto-upgrades.j2", dest: "/etc/apt/apt.conf.d/20auto-upgrades"}
+
+- name: install apt-listchanges
+  apt: name=apt-listchanges state=present
+
+- name: copy apt-listchanges config
+  copy: src=listchanges.conf dest=/etc/apt/listchanges.conf backup=yes

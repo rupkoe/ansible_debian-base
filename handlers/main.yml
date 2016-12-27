@@ -1,0 +1,13 @@
+---
+
+- name: restart syslog service
+  service: name=rsyslog state=restarted
+
+- name: restart sshd
+  service: name=ssh state=restarted
+
+- name: build sender_canonical db
+  command: /usr/sbin/postmap /etc/postfix/sender_canonical
+
+- name: reload postfix
+  command: /usr/sbin/postfix reload

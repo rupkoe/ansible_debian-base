@@ -1,0 +1,2 @@
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "{% if base__unatt_upgrades__run == true %}1{% else %}0{% endif %}";

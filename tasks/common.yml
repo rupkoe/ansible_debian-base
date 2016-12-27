@@ -1,0 +1,70 @@
+---
+
+##
+# Hostname
+
+- block:
+  - name: set hostname
+    hostname: name={{ base__hostname }}
+
+    # this works fine for Debian / Ubuntu -- other distros might expect FQDN as hostname
+  - name: add hostname to /etc/hosts
+    blockinfile:
+      dest: /etc/hosts
+      insertbefore: BOF
+      backup: yes
+      block: |
+        127.0.0.1 {{ base__host_fqdn }}  {{ base__hostname }}
+
+  when: base__hostname|d() != ""
+
+
+##
+# dbus - required by some tools (like set-timezone)
+
+- name: install dbus
+  apt: name=dbus state=present
+
+
+##
+# sshd config
+
+- name: copy sshd_config
+  copy: src=sshd_config dest=/etc/ssh/sshd_config owner=root group=root mode=0644 backup=yes
+  notify: restart sshd
+
+
+##
+# Install admin tools
+
+- name: install util packages
+  apt: name={{ item }} state=present
+  with_items: "{{ base__util_packages }}"
+
+  # put /etc under VCS control - read https://github.com/joeyh/etckeeper#security-warnings
+- name: install etckeeper
+  apt: name=etckeeper state=present
+  when: base__etckeeper
+
+  # basic monitoring with logwatch
+- name: install logwatch
+  apt: name=logwatch state=present
+  when: base__logwatch
+
+
+##
+# Create swapfile
+
+- name: Create swap file
+  script: create-swap.sh creates=/var/swapfile
+  when: base__swap_create
+
+
+##
+# Global bashrc and vimrc
+
+- name: copy global bashrc
+  copy: src=bashrc dest=/etc/bash.bashrc owner=root group=root mode=0644 backup=yes
+
+- name: copy global vimrc
+  copy: src=vimrc dest=/etc/vim/vimrc owner=root group=root mode=0644 backup=yes

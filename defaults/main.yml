@@ -1,0 +1,65 @@
+---
+
+##
+# common
+
+# hostname (will be skipped if no value is specified)
+base__hostname:
+base__host_fqdn: "{{ base__hostname }}"
+
+# create /var/swapfile and enable it as swap space
+base__swap_create: no
+
+base__util_packages:
+  - bash-completion
+  - vim
+  - atop
+  - htop
+  - lnav
+  - dnsutils
+  - mailutils
+  - screen
+  - tmux
+  - curl
+
+# install etckeeper
+base__etckeeper: yes
+
+# install logwatch
+base__logwatch: yes
+
+
+##
+# time
+
+base__timezone: "Europe/Berlin"
+
+
+##
+# unatt-upgrades
+
+# enable unattended upgrades on the server
+base__unatt_upgrades__run: yes
+
+# install also stability updates
+base__unatt_upgrades__all_updates: no
+
+# reboot automatically if required to complete backups
+base__unatt_upgrades__reboot: no
+#if automatic reboots are enabled, setting this will reboot only at specific times
+# otherwise reboot is carried out immediately! example: "04:00"
+base__unatt_upgrades__reboot_time: ""
+
+# send email notifications (to root)
+base__unatt_upgrades__mail: yes
+base__unatt_upgrades__mail_only_err: no
+
+
+##
+# email
+
+# from address for sending emails.
+# relevant for outbound mails - set to address accepted by external mail servers
+# ! see Readme.md for details !
+base__external_fqdn: "{{ fact_fqdn }}"
+base__canonical_sender_address: "no-reply@{{ base__external_fqdn }}"

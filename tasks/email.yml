@@ -1,0 +1,43 @@
+---
+###
+# Basic email setup for getting admin mails sent outbound
+###
+
+##
+# get host's FQDN
+# (ansible_fqdn is wrong, at least on Debian)
+
+- name: get fqdn
+  command: /bin/hostname --fqdn
+  register: result_fqdn
+  changed_when: false
+
+- name: set fact fqdn
+  set_fact: fact_fqdn={{ result_fqdn.stdout }}
+  tags: exclude-dry-run
+
+
+##
+# Postfix install and config
+
+- name: install Postfix
+  apt: name=postfix state=present
+
+- name: write Postfix main.cf
+  template: src=postfix_main.cf.j2 dest=/etc/postfix/main.cf backup=yes
+  notify: reload postfix
+  tags: exclude-dry-run
+
+  # required for rewriting sender address for outbound email,
+  # if local sender addresses are rejected by external mail servers
+- name: write sender_canonical
+  template: src=sender_canonical.j2 dest=/etc/postfix/sender_canonical backup=yes
+  notify:
+    - build sender_canonical db
+    - reload postfix
+  tags: exclude-dry-run
+
+- name: set mailname
+  copy: dest=/etc/mailname backup=yes content={{ fact_fqdn }}
+  notify: reload postfix
+  tags: exclude-dry-run

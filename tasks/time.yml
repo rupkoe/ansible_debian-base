@@ -1,0 +1,20 @@
+---
+###
+# Time setting
+###
+
+  # on Debian ntp package should be pre-configured with decent NTP servers
+- name: install ntp
+  apt: name=ntp state=present
+
+- name: check current timezone
+  command: /bin/cat /etc/timezone
+  register: result_timezone
+  changed_when: false
+
+- name: set new timezone
+  command: /usr/bin/timedatectl set-timezone {{ base__timezone }}
+  notify: restart syslog service
+  when: >
+    base__timezone is defined
+    and result_timezone.stdout != base__timezone
